@@ -36,23 +36,51 @@ gray_diff = cv2.cvtColor(diff, cv2.COLOR_BGR2GRAY)
 # Aplica um threshold para realçar apenas diferenças visíveis
 _, mask = cv2.threshold(gray_diff, 30, 255, cv2.THRESH_BINARY)
 
+# Total de pixels
+total_pixels = mask.size
+
+# Pixels diferentes (mask > 0)
+pixels_diferentes = cv2.countNonZero(mask)
+
+# Percentagem de diferença
+percentagem_diferenca = (pixels_diferentes / total_pixels) * 100
+print(f"🧮 {pixels_diferentes} pixels diferentes de {total_pixels} ({percentagem_diferenca:.2f}%)")
+
 # Encontrar contornos das áreas diferentes
 contornos, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+print(f"🔍 {len(contornos)} regiões com diferenças detetadas")
 
-# Criar uma cópia da imagem de teste para desenhar os contornos
+# Criar imagem de resultado com overlay transparente
 img_resultado = img_teste.copy()
-cv2.drawContours(img_resultado, contornos, -1, (0, 0, 255), 2)
+overlay = img_resultado.copy()
+
+# Cor do destaque: vermelho
+cor = (0, 0, 255)
+
+# Preencher as áreas diferentes na máscara
+for contorno in contornos:
+    cv2.drawContours(overlay, [contorno], -1, cor, thickness=cv2.FILLED)
+
+# Combinar a imagem com o overlay usando transparência
+alpha = 0.7  # transparência
+cv2.addWeighted(overlay, alpha, img_resultado, 1 - alpha, 0, img_resultado)
 
 # Guardar a imagem de resultado e obter o caminho
 caminho_resultado = guardar_imagem_resultado(img_resultado)
 
 # Gerar o relatório PDF
-gerar_relatorio_pdf(
-    img_ref_path=IMG_REFERENCIA,
-    img_teste_path=IMG_TESTE,
-    img_resultado_path=caminho_resultado,
-    num_diferencas=len(contornos)
-)
+if caminho_resultado:
+    gerar_relatorio_pdf(
+        img_ref_path=IMG_REFERENCIA,
+        img_teste_path=IMG_TESTE,
+        img_resultado_path=caminho_resultado,
+        num_diferencas=len(contornos),
+        total_pixels=total_pixels,
+        pixels_diferentes=pixels_diferentes,
+        percentagem_diferenca=percentagem_diferenca
+    )
+else:
+    print("⚠️ Imagem de resultado não foi guardada. Relatório PDF não será gerado.")
 
 # Mostrar a imagem resultante
 cv2.imshow("Diferenças Detetadas", img_resultado)

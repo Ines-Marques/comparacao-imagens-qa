@@ -26,7 +26,8 @@ def guardar_imagem_resultado(imagem, prefixo="resultado"):
         return None
 
 
-def gerar_relatorio_pdf(img_ref_path, img_teste_path, img_resultado_path, num_diferencas):
+def gerar_relatorio_pdf(img_ref_path, img_teste_path, img_resultado_path,
+                        num_diferencas, total_pixels, pixels_diferentes, percentagem_diferenca):
     """
     Gera um ficheiro PDF com os dados da comparação e as imagens com legendas.
     """
@@ -58,6 +59,8 @@ def gerar_relatorio_pdf(img_ref_path, img_teste_path, img_resultado_path, num_di
     c.drawString(margem, y, f"Imagem de Resultado:  {img_resultado_path}")
     y -= 20
     c.drawString(margem, y, f"Número de diferenças detetadas: {num_diferencas}")
+    y -= 20
+    c.drawString(margem, y, f"Pixels diferentes: {pixels_diferentes} / {total_pixels} ({percentagem_diferenca:.2f}%)")
     y -= 40
 
     # Imagens com legendas
@@ -66,16 +69,16 @@ def gerar_relatorio_pdf(img_ref_path, img_teste_path, img_resultado_path, num_di
                         ("Resultado com Diferenças", img_resultado_path)]:
 
         c.setFont("Helvetica-Bold", 12)
-        c.drawString(margem, y, label)
-        y -= 10
+        c.drawCentredString(largura / 2, y, label)
+        y -= 20
 
         try:
-            c.drawImage(path, margem, y - 180, width=200, height=200, preserveAspectRatio=True)
+            c.drawImage(path, margem, y - 200, width=200, height=200, preserveAspectRatio=True)
         except Exception as e:
             c.setFont("Helvetica", 10)
             c.drawString(margem, y - 20, f"[Erro ao carregar imagem: {e}]")
 
-        y -= 210
+        y -= 230
 
         # Se acabar a página, cria nova
         if y < 200:
