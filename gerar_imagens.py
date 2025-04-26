@@ -2,11 +2,11 @@ import cv2
 import numpy as np
 import os
 
-# Criar diretórios, se não existirem
+# Criar diretórios de destino, se não existirem
 os.makedirs("imagens/referencia", exist_ok=True)
 os.makedirs("imagens/teste", exist_ok=True)
 
-# Tamanho da imagem
+# Tamanho da imagem que vai ser criada
 altura, largura = 300, 300
 
 # Criar imagem de referência (branco + quadrado azul)
@@ -17,7 +17,7 @@ cv2.rectangle(img_referencia, (100, 100), (200, 200), (255, 0, 0), -1)  # Quadra
 img_teste = img_referencia.copy()
 cv2.circle(img_teste, (150, 150), 20, (0, 255, 0), -1)  # Círculo vermelho
 
-# Guardar imagens
+# Guardar imagens nos respetivos diretórios
 cv2.imwrite("imagens/referencia/exemplo.png", img_referencia)
 cv2.imwrite("imagens/teste/exemplo.png", img_teste)
 

@@ -1,10 +1,10 @@
 import cv2
-import numpy as np
 import os
 
+# Importação de funções do módulo de geração de relatórios
 from output.relatorio import guardar_imagem_resultado, gerar_relatorio_pdf
 
-# Caminhos das imagens
+# Definir caminhos das imagens de referência e de teste
 IMG_NOME = "exemplo.png"
 IMG_REFERENCIA = os.path.join("imagens", "referencia", IMG_NOME)
 IMG_TESTE = os.path.join("imagens", "teste", IMG_NOME)
@@ -22,27 +22,27 @@ if img_teste is None:
     print(f"❌ Imagem de teste não encontrada: {IMG_TESTE}")
     exit(1)
 
-# Garante que têm o mesmo tamanho
+# Verifica se as imagens têm o mesmo tamanho
 if img_ref.shape != img_teste.shape:
     print("❌ As imagens têm tamanhos diferentes e não podem ser comparadas diretamente.")
     exit(1)
 
-# Calcula a diferença absoluta entre as imagens
+# Calcula a diferença absoluta entre as imagens pixel a pixel
 diff = cv2.absdiff(img_ref, img_teste)
 
 # Converte para escala de cinzentos para facilitar visualização
 gray_diff = cv2.cvtColor(diff, cv2.COLOR_BGR2GRAY)
 
-# Aplica um threshold para realçar apenas diferenças visíveis
+# Aplica um threshold para realçar diferenças visíveis
 _, mask = cv2.threshold(gray_diff, 30, 255, cv2.THRESH_BINARY)
 
-# Total de pixels
+# Numero total de pixels na imagem
 total_pixels = mask.size
 
-# Pixels diferentes (mask > 0)
+# Numero de pixels diferentes
 pixels_diferentes = cv2.countNonZero(mask)
 
-# Percentagem de diferença
+# Percentagem de pixels alterados
 percentagem_diferenca = (pixels_diferentes / total_pixels) * 100
 print(f"🧮 {pixels_diferentes} pixels diferentes de {total_pixels} ({percentagem_diferenca:.2f}%)")
 
@@ -50,22 +50,24 @@ print(f"🧮 {pixels_diferentes} pixels diferentes de {total_pixels} ({percentag
 contornos, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 print(f"🔍 {len(contornos)} regiões com diferenças detetadas")
 
-# Criar imagem de resultado com overlay transparente
+# Copiar imagem de teste
 img_resultado = img_teste.copy()
+
+# Criar overlay para desenhar diferenças
 overlay = img_resultado.copy()
 
-# Cor do destaque: vermelho
+# Cor vermelha para as diferenças
 cor = (0, 0, 255)
 
-# Preencher as áreas diferentes na máscara
+# Preencher as áreas alteradas no overlay
 for contorno in contornos:
     cv2.drawContours(overlay, [contorno], -1, cor, thickness=cv2.FILLED)
 
-# Combinar a imagem com o overlay usando transparência
+# Combinar a imagem base com o overlay
 alpha = 0.7  # transparência
 cv2.addWeighted(overlay, alpha, img_resultado, 1 - alpha, 0, img_resultado)
 
-# Guardar a imagem de resultado e obter o caminho
+# Guardar a imagem de resultado
 caminho_resultado = guardar_imagem_resultado(img_resultado)
 
 # Gerar o relatório PDF
@@ -80,9 +82,9 @@ if caminho_resultado:
         percentagem_diferenca=percentagem_diferenca
     )
 else:
-    print("⚠️ Imagem de resultado não foi guardada. Relatório PDF não será gerado.")
+    print("⚠️ A imagem de resultado não foi guardada. O relatório PDF não será gerado.")
 
-# Mostrar a imagem resultante
+# Mostrar a imagem de resultado
 cv2.imshow("Diferenças Detetadas", img_resultado)
 cv2.waitKey(0)
 cv2.destroyAllWindows()

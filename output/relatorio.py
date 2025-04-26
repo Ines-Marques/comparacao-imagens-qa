@@ -7,22 +7,24 @@ from reportlab.pdfgen import canvas
 def guardar_imagem_resultado(imagem, prefixo="resultado"):
     """
     Guarda uma imagem no diretório 'relatorios/' com timestamp no nome.
-    Retorna o caminho completo do ficheiro guardado.
+    Retorna o caminho completo do ficheiro guardado ou None em caso de erro.
     """
     pasta = "relatorios"
     os.makedirs(pasta, exist_ok=True)
 
+    # Cria o nome de ficheiro com data e hora
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     nome_ficheiro = f"{prefixo}_{timestamp}.png"
     caminho = os.path.join(pasta, nome_ficheiro)
 
+    # Guarda a imagem
     sucesso = cv2.imwrite(caminho, imagem)
 
     if sucesso:
         print(f"✅ Imagem de resultado guardada em: {caminho}")
         return caminho
     else:
-        print(f"❌ Falha ao guardar a imagem em: {caminho}")
+        print(f"❌ Falha ao guardar a imagem de resultado em: {caminho}")
         return None
 
 
@@ -34,10 +36,12 @@ def gerar_relatorio_pdf(img_ref_path, img_teste_path, img_resultado_path,
     pasta = "relatorios"
     os.makedirs(pasta, exist_ok=True)
 
+    # Criar nome do ficheiro PDF com timestamp
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     nome_ficheiro = f"relatorio_{timestamp}.pdf"
     caminho = os.path.join(pasta, nome_ficheiro)
 
+    # Iniciar o canvas PDF
     c = canvas.Canvas(caminho, pagesize=A4)
     largura, altura = A4
     margem = 50
@@ -73,17 +77,20 @@ def gerar_relatorio_pdf(img_ref_path, img_teste_path, img_resultado_path,
         y -= 20
 
         try:
+            # Inserir a imagem
             c.drawImage(path, margem, y - 200, width=200, height=200, preserveAspectRatio=True)
         except Exception as e:
+            # Caso a imagem falhe, escrever aviso
             c.setFont("Helvetica", 10)
-            c.drawString(margem, y - 20, f"[Erro ao carregar imagem: {e}]")
+            c.drawString(margem, y - 20, f"⚠️ Erro ao carregar imagem: {e}")
 
         y -= 230
 
-        # Se acabar a página, cria nova
+        # Se acabar a página, cria uma nova
         if y < 200:
             c.showPage()
             y = altura - margem
 
+    # Finalizar o PDF
     c.save()
     print(f"📝 PDF gerado com sucesso: {caminho}")
