@@ -5,7 +5,7 @@ import os
 from output.relatorio import guardar_imagem_resultado, gerar_relatorio_pdf
 
 # Definir caminhos das imagens de referência e de teste
-IMG_NOME = "exemplo.png"
+IMG_NOME = "menu.png"
 IMG_REFERENCIA = os.path.join("imagens", "referencia", IMG_NOME)
 IMG_TESTE = os.path.join("imagens", "teste", IMG_NOME)
 
@@ -50,6 +50,9 @@ print(f"🧮 {pixels_diferentes} pixels diferentes de {total_pixels} ({percentag
 contornos, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 print(f"🔍 {len(contornos)} regiões com diferenças detetadas")
 
+# Tipo de análise realizada
+tipo_analise = "Diferença Absoluta de Pixels (AbsDiff)"
+
 # Copiar imagem de teste
 img_resultado = img_teste.copy()
 
@@ -79,7 +82,8 @@ if caminho_resultado:
         num_diferencas=len(contornos),
         total_pixels=total_pixels,
         pixels_diferentes=pixels_diferentes,
-        percentagem_diferenca=percentagem_diferenca
+        percentagem_diferenca=percentagem_diferenca,
+        tipo_analise = tipo_analise
     )
 else:
     print("⚠️ A imagem de resultado não foi guardada. O relatório PDF não será gerado.")

@@ -29,7 +29,7 @@ def guardar_imagem_resultado(imagem, prefixo="resultado"):
 
 
 def gerar_relatorio_pdf(img_ref_path, img_teste_path, img_resultado_path,
-                        num_diferencas, total_pixels, pixels_diferentes, percentagem_diferenca):
+                        num_diferencas, total_pixels, pixels_diferentes, percentagem_diferenca, tipo_analise):
     """
     Gera um ficheiro PDF com os dados da comparação e as imagens com legendas.
     """
@@ -61,6 +61,8 @@ def gerar_relatorio_pdf(img_ref_path, img_teste_path, img_resultado_path,
     c.drawString(margem, y, f"Imagem de Teste:      {img_teste_path}")
     y -= 20
     c.drawString(margem, y, f"Imagem de Resultado:  {img_resultado_path}")
+    y -= 20
+    c.drawString(margem, y, f"Tipo de Análise: {tipo_analise}")
     y -= 20
     c.drawString(margem, y, f"Número de diferenças detetadas: {num_diferencas}")
     y -= 20
