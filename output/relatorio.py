@@ -66,28 +66,44 @@ def gerar_relatorio_pdf(img_ref_path, img_teste_path, img_resultado_path,
     y -= 20
     c.drawString(margem, y, f"Tipo de Análise: {tipo_analise}")
     y -= 20
+
     if num_diferencas is not None:
         c.drawString(margem, y, f"Número de diferenças detetadas: {num_diferencas}")
         y -= 20
+    elif metodo in ["histograma", "ssim"]:
+        c.drawString(margem, y, "Número de diferenças detetadas: n/a")
+        y -= 20
+
     if pixels_diferentes is not None and total_pixels is not None:
         c.drawString(margem, y,
                      f"Pixels diferentes: {pixels_diferentes} / {total_pixels} ({percentagem_diferenca:.2f}%)")
         y -= 20
-    if extra_metricas:
-        c.setFont("Helvetica-Bold", 12)
-        c.drawString(margem, y, "Métricas adicionais:")
+    elif metodo in ["histograma", "ssim"]:
+        c.drawString(margem, y, "Pixels diferentes: n/a")
         y -= 20
-        c.setFont("Helvetica", 11)
-        for chave, valor in extra_metricas.items():
-            c.drawString(margem + 10, y, f"{chave}: {valor}")
-            y -= 20
+
+    if metodo == "histograma" and "correlacao_histogramas" in extra_metricas:
+        c.drawString(margem, y,
+                     f"Correlação dos Histogramas: {extra_metricas['correlacao_histogramas']} (mais próximo de 1 indica maior semelhança)")
+        y -= 20
+    elif metodo == "ssim" and "indice_ssim" in extra_metricas:
+        c.drawString(margem, y,
+                     f"Índice SSIM: {extra_metricas['indice_ssim']} (mais próximo de 1 indica maior semelhança estrutural)")
+        y -= 20
     y -= 20
 
-    # Imagens com legendas
-    for label, path in [("Imagem de Referência", img_ref_path),
-                        ("Imagem de Teste", img_teste_path),
-                        ("Resultado com Diferenças", img_resultado_path)]:
+    # Lista inicial com as duas imagens base (referência e teste)
+    imagens_para_inserir = [
+        ("Imagem de Referência", img_ref_path),
+        ("Imagem de Teste", img_teste_path)
+    ]
 
+    # Apenas para métodos com resultado visual (absdiff e ssim), incluir imagem de diferenças
+    if metodo in ["absdiff", "ssim"]:
+        imagens_para_inserir.append(("Resultado com Diferenças", img_resultado_path))
+
+    # Adiciona as imagens ao relatório
+    for label, path in imagens_para_inserir:
         c.setFont("Helvetica-Bold", 12)
         c.drawCentredString(largura / 2, y, label)
         y -= 20

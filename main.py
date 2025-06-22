@@ -5,7 +5,7 @@ import os
 from output.relatorio import guardar_imagem_resultado, gerar_relatorio_pdf
 
 # Importação de funções do módulo de análise de diferenças
-from comparador.analises import analisar_diferencas
+from processamento.analises import analisar_diferencas
 
 # Definir o método de análise: "absdiff", "histograma" ou "ssim"
 metodo_analise = "ssim"
@@ -37,14 +37,16 @@ if img_ref.shape != img_teste.shape:
 img_resultado, tipo_analise, metricas = analisar_diferencas(img_ref, img_teste, metodo = metodo_analise)
 
 # Guardar a imagem de resultado
-caminho_resultado = guardar_imagem_resultado(img_resultado, metodo = metodo_analise)
+caminho_resultado = None
+if metodo_analise in ["absdiff", "ssim"]:
+    caminho_resultado = guardar_imagem_resultado(img_resultado, metodo = metodo_analise)
 
 # Separar as métricas adicionais (específicas de cada método de análise)
 chaves_basicas = ["num_diferencas", "total_pixels", "pixels_diferentes", "percentagem_diferenca"]
 extra_metricas = {k: v for k, v in metricas.items() if k not in chaves_basicas}
 
-# Gerar o relatório PDF
-if caminho_resultado:
+# Gerar o relatório PDF; a imagem de resultado só é obrigatória para métodos com comparação visual (absdiff e ssim)
+if caminho_resultado or metodo_analise == "histograma":
     gerar_relatorio_pdf(
         img_ref_path = IMG_REFERENCIA,
         img_teste_path = IMG_TESTE,
