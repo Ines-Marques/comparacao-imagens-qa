@@ -23,7 +23,7 @@ def analisar_diferencas(img_ref, img_teste, metodo="absdiff"):
         gray_diff = cv2.cvtColor(diff, cv2.COLOR_BGR2GRAY)
 
         # Definir o limiar de diferença (quanto menor, mais sensível à variação de píxels)
-        limiar_diferenca = 30
+        limiar_diferenca = 10
 
         # Aplicar threshold ao mapa de diferenças para encontrar alterações
         _, mask = cv2.threshold(gray_diff, limiar_diferenca, 255, cv2.THRESH_BINARY)
@@ -92,9 +92,9 @@ def analisar_diferencas(img_ref, img_teste, metodo="absdiff"):
         # Definir o limiar de similaridade (valores mais baixos indicam maiores diferenças)
         # Isolar o que estiver abaixo deste valor
         # O mapa de diferenças SSIM tem valores de 0 (completamente diferente) a 1 (idêntico),
-        # mas aqui está escalado para 0–255. Um valor de 200 ≈ 0.78.
-        # Com THRESH_BINARY_INV, destacamos píxels com baixa similaridade (abaixo de 200).
-        limiar_similaridade = 200
+        # mas aqui está escalado para 0–255. Um valor de 220 ≈ 0.86.
+        # Com THRESH_BINARY_INV, destacamos píxels com baixa similaridade (abaixo de 220).
+        limiar_similaridade = 220
 
         # Aplicar threshold ao mapa de diferenças para encontrar alterações
         _, mask = cv2.threshold(diff, limiar_similaridade, 255, cv2.THRESH_BINARY_INV)

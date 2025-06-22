@@ -1,5 +1,7 @@
 import cv2
 import os
+import time
+import uuid
 
 # Importação de funções do módulo de geração de relatórios
 from output.relatorio import guardar_imagem_resultado, gerar_relatorio_pdf
@@ -8,7 +10,7 @@ from output.relatorio import guardar_imagem_resultado, gerar_relatorio_pdf
 from processamento.analises import analisar_diferencas
 
 # Definir o método de análise: "absdiff", "histograma" ou "ssim"
-metodo_analise = "ssim"
+metodo_analise = "absdiff"
 
 # Definir caminhos das imagens de referência e de teste
 IMG_NOME = "menu.png"
@@ -33,19 +35,27 @@ if img_ref.shape != img_teste.shape:
     print("❌ As imagens têm tamanhos diferentes e não podem ser comparadas diretamente.")
     exit(1)
 
+# Gera identificador único
+id_relatorio = str(uuid.uuid4())[:8]
+
+# Inicia contagem do tempo
+inicio = time.time()
+
 # Executa a análise selecionada
 img_resultado, tipo_analise, metricas = analisar_diferencas(img_ref, img_teste, metodo = metodo_analise)
 
-# Guardar a imagem de resultado
+# Calcula tempo de execução
+duracao = time.time() - inicio
+
+# Guarda a imagem de resultado
 caminho_resultado = None
 if metodo_analise in ["absdiff", "ssim"]:
-    caminho_resultado = guardar_imagem_resultado(img_resultado, metodo = metodo_analise)
+    caminho_resultado = guardar_imagem_resultado(img_resultado, metodo = metodo_analise, identificador = id_relatorio)
 
-# Separar as métricas adicionais (específicas de cada método de análise)
-chaves_basicas = ["num_diferencas", "total_pixels", "pixels_diferentes", "percentagem_diferenca"]
-extra_metricas = {k: v for k, v in metricas.items() if k not in chaves_basicas}
+# Cópia completa das métricas para uso em observações automáticas
+extra_metricas = metricas.copy()
 
-# Gerar o relatório PDF; a imagem de resultado só é obrigatória para métodos com comparação visual (absdiff e ssim)
+# Gera o relatório PDF; a imagem de resultado só é obrigatória para métodos com comparação visual (absdiff e ssim)
 if caminho_resultado or metodo_analise == "histograma":
     gerar_relatorio_pdf(
         img_ref_path = IMG_REFERENCIA,
@@ -57,12 +67,14 @@ if caminho_resultado or metodo_analise == "histograma":
         percentagem_diferenca = metricas.get("percentagem_diferenca"),
         tipo_analise = tipo_analise,
         metodo = metodo_analise,
+        identificador = id_relatorio,
+        duracao = duracao,
         extra_metricas = extra_metricas
     )
 else:
     print("⚠️ A imagem de resultado não foi guardada. O relatório PDF não será gerado.")
 
-# Mostrar a imagem de resultado
+# Mostra a imagem de resultado
 cv2.imshow("Diferenças Detetadas", img_resultado)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
