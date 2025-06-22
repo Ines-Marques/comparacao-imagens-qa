@@ -4,7 +4,7 @@ from datetime import datetime
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 
-def guardar_imagem_resultado(imagem, prefixo="resultado"):
+def guardar_imagem_resultado(imagem, prefixo="resultado", metodo = None):
     """
     Guarda uma imagem no diretório 'relatorios/' com timestamp no nome.
     Retorna o caminho completo do ficheiro guardado ou None em caso de erro.
@@ -14,7 +14,8 @@ def guardar_imagem_resultado(imagem, prefixo="resultado"):
 
     # Cria o nome de ficheiro com data e hora
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    nome_ficheiro = f"{prefixo}_{timestamp}.png"
+    sufixo_metodo = f"_{metodo}" if metodo else ""
+    nome_ficheiro = f"{prefixo}{sufixo_metodo}_{timestamp}.png"
     caminho = os.path.join(pasta, nome_ficheiro)
 
     # Guarda a imagem
@@ -29,7 +30,7 @@ def guardar_imagem_resultado(imagem, prefixo="resultado"):
 
 
 def gerar_relatorio_pdf(img_ref_path, img_teste_path, img_resultado_path,
-                        num_diferencas, total_pixels, pixels_diferentes, percentagem_diferenca, tipo_analise):
+                        num_diferencas, total_pixels, pixels_diferentes, percentagem_diferenca, tipo_analise, metodo = None, extra_metricas = None):
     """
     Gera um ficheiro PDF com os dados da comparação e as imagens com legendas.
     """
@@ -38,7 +39,8 @@ def gerar_relatorio_pdf(img_ref_path, img_teste_path, img_resultado_path,
 
     # Criar nome do ficheiro PDF com timestamp
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    nome_ficheiro = f"relatorio_{timestamp}.pdf"
+    sufixo_metodo = f"_{metodo}" if metodo else ""
+    nome_ficheiro = f"relatorio{sufixo_metodo}_{timestamp}.pdf"
     caminho = os.path.join(pasta, nome_ficheiro)
 
     # Iniciar o canvas PDF
@@ -64,10 +66,22 @@ def gerar_relatorio_pdf(img_ref_path, img_teste_path, img_resultado_path,
     y -= 20
     c.drawString(margem, y, f"Tipo de Análise: {tipo_analise}")
     y -= 20
-    c.drawString(margem, y, f"Número de diferenças detetadas: {num_diferencas}")
+    if num_diferencas is not None:
+        c.drawString(margem, y, f"Número de diferenças detetadas: {num_diferencas}")
+        y -= 20
+    if pixels_diferentes is not None and total_pixels is not None:
+        c.drawString(margem, y,
+                     f"Pixels diferentes: {pixels_diferentes} / {total_pixels} ({percentagem_diferenca:.2f}%)")
+        y -= 20
+    if extra_metricas:
+        c.setFont("Helvetica-Bold", 12)
+        c.drawString(margem, y, "Métricas adicionais:")
+        y -= 20
+        c.setFont("Helvetica", 11)
+        for chave, valor in extra_metricas.items():
+            c.drawString(margem + 10, y, f"{chave}: {valor}")
+            y -= 20
     y -= 20
-    c.drawString(margem, y, f"Pixels diferentes: {pixels_diferentes} / {total_pixels} ({percentagem_diferenca:.2f}%)")
-    y -= 40
 
     # Imagens com legendas
     for label, path in [("Imagem de Referência", img_ref_path),
