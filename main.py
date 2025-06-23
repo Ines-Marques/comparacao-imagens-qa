@@ -1,7 +1,7 @@
-import cv2  # OpenCV para carregar e manipular imagens
-import os   # Para operações com o sistema de ficheiros (criação de pastas, caminhos)
-import time # Para medição de tempo de execução dos métodos e tempo total
-import uuid # Para geração de identificadores únicos para cada sessão de análise
+import cv2  # OpenCV para manipulação de imagens
+import os   # Operações com sistema de ficheiros
+import time # Medição de tempo de execução
+import uuid # Geração de identificadores únicos para identificação de sessões
 
 # Importação de funções do módulo de geração de relatórios
 from output.relatorio import guardar_imagem_resultado, gerar_relatorio_pdf_multimetodo
@@ -108,32 +108,3 @@ gerar_relatorio_pdf_multimetodo(
     identificador = id_relatorio,
     duracao_total = duracao_total
 )
-
-# Mostra a imagem de resultado do último método executado, se existir
-# Permite visualização imediata do resultado final
-if resultados:
-    # Obtém o resultado do último método na lista
-    ultima = resultados[-1]
-    img_mostrar = None
-
-    # Se o último método gerou imagem de resultado, carrega-a
-    if ultima["imagem_resultado"]:
-        img_mostrar = cv2.imread(ultima["imagem_resultado"])
-    else:
-        # Caso contrário, mostra a imagem de teste original
-        # Acontece quando o último método é "histograma" (sem componente visual)
-        img_mostrar = img_teste
-
-    # Confirma se a imagem foi carregada com sucesso antes de mostrar
-    if img_mostrar is not None:
-        # cv2.imshow() abre a janela com a imagem
-        # o título da janela indica que são as diferenças do último método
-        cv2.imshow("Último Resultado de Diferenças Detetadas", img_mostrar)
-
-        # cv2.waitKey(0) espera que utilizador pressione qualquer tecla
-        # Mantém a janela aberta até interação do utilizador
-        cv2.waitKey(0)
-
-        # cv2.destroyAllWindows() fecha todas as janelas OpenCV abertas
-        # Limpa recursos e termina a visualização
-        cv2.destroyAllWindows()

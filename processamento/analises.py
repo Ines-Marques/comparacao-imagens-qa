@@ -1,4 +1,4 @@
-import cv2  # OpenCV para manipulação de imagens (diferenças, histogramas, contornos)
+import cv2  # OpenCV para manipulação de imagens
 
 # Para análise SSIM
 from skimage.metrics import structural_similarity as ssim

@@ -1,5 +1,5 @@
-import cv2 # OpenCV para manipulação de imagens (carregamento, escrita e processamento)
-import os # Para operações com o sistema de ficheiros (criação de pastas, caminhos)
+import cv2 # OpenCV para manipulação de imagens
+import os # Operações com sistema de ficheiros
 from datetime import datetime # Para geração de timestamps únicos nos nomes de ficheiros
 from reportlab.lib.pagesizes import A4 # Define o tamanho padrão da página PDF
 from reportlab.pdfgen import canvas # Biblioteca principal para geração de PDFs
@@ -214,6 +214,10 @@ def gerar_relatorio_pdf_multimetodo(img_ref_path, img_teste_path, resultados, id
         y -= 25
 
         c.setFont("Helvetica", 11)
+
+        # Tempo de execução do método
+        c.drawString(margem, y, f"Tempo de execução: {duracao:.2f} segundos")
+        y -= 20
 
         # Número de diferenças detetadas
         num_diferencas = metricas.get("num_diferencas")
