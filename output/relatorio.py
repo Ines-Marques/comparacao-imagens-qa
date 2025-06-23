@@ -56,8 +56,7 @@ def gerar_observacoes(metodo, metricas):
             return "PERIGO Diferenças significativas detetadas entre as imagens."
     return "-"
 
-def gerar_relatorio_pdf(img_ref_path, img_teste_path, img_resultado_path,
-                        num_diferencas, total_pixels, pixels_diferentes, percentagem_diferenca, tipo_analise, metodo = None, extra_metricas = None, identificador = "", duracao = None):
+def gerar_relatorio_pdf_multimetodo(img_ref_path, img_teste_path, resultados, identificador="", duracao_total=None):
     """
     Gera um ficheiro PDF com os dados da comparação e as imagens com legendas.
     """
@@ -66,8 +65,7 @@ def gerar_relatorio_pdf(img_ref_path, img_teste_path, img_resultado_path,
 
     # Criar nome do ficheiro PDF com timestamp
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    sufixo_metodo = f"_{metodo}" if metodo else ""
-    nome_ficheiro = f"relatorio{sufixo_metodo}_{timestamp}_{identificador}.pdf"
+    nome_ficheiro = f"relatorio_multimetodo_{timestamp}_{identificador}.pdf"
     caminho = os.path.join(pasta, nome_ficheiro)
 
     # Iniciar o canvas PDF
@@ -78,7 +76,7 @@ def gerar_relatorio_pdf(img_ref_path, img_teste_path, img_resultado_path,
 
     # Título
     c.setFont("Helvetica-Bold", 16)
-    c.drawString(margem, y, "Relatório de Comparação de Imagens")
+    c.drawString(margem, y, "Relatório de Comparação de Imagens (Múltiplos Métodos)")
     y -= 30
 
     # Info básica
@@ -87,79 +85,133 @@ def gerar_relatorio_pdf(img_ref_path, img_teste_path, img_resultado_path,
     y -= 20
     c.drawString(margem, y, f"ID do Relatório: {identificador}")
     y -= 20
-    if duracao is not None:
-        c.drawString(margem, y, f"Tempo de Execução: {duracao:.2f} segundos")
+    if duracao_total is not None:
+        c.drawString(margem, y, f"Tempo de Execução: {duracao_total:.2f} segundos")
         y -= 20
     c.drawString(margem, y, f"Imagem de Referência: {img_ref_path}")
     y -= 20
     c.drawString(margem, y, f"Imagem de Teste:      {img_teste_path}")
     y -= 20
-    c.drawString(margem, y, f"Imagem de Resultado:  {img_resultado_path}")
-    y -= 20
     y -= 10
-    c.drawString(margem, y, f"Tipo de Análise: {tipo_analise}")
-    y -= 20
 
-    if num_diferencas is not None:
-        c.drawString(margem, y, f"Número de diferenças detetadas: {num_diferencas}")
-        y -= 20
-    elif metodo in ["histograma", "ssim"]:
-        c.drawString(margem, y, "Número de diferenças detetadas: n/a")
-        y -= 20
-
-    if pixels_diferentes is not None and total_pixels is not None:
-        c.drawString(margem, y,
-                     f"Pixels diferentes: {pixels_diferentes} / {total_pixels} ({percentagem_diferenca:.2f}%)")
-        y -= 20
-    elif metodo in ["histograma", "ssim"]:
-        c.drawString(margem, y, "Pixels diferentes: n/a")
-        y -= 20
-
-    if metodo == "histograma" and "correlacao_histogramas" in extra_metricas:
-        c.drawString(margem, y,
-                     f"Correlação dos Histogramas: {extra_metricas['correlacao_histogramas']} (mais próximo de 1 indica maior semelhança)")
-        y -= 20
-    elif metodo == "ssim" and "indice_ssim" in extra_metricas:
-        c.drawString(margem, y,
-                     f"Índice SSIM: {extra_metricas['indice_ssim']} (mais próximo de 1 indica maior semelhança estrutural)")
-        y -= 20
-    y -= 20
-
-    # Gerar observação automática
-    observacao = gerar_observacoes(metodo, extra_metricas or {})
-    if observacao:
-        y -= 10
-        c.setFont("Helvetica-Oblique", 11)
-        c.drawString(margem, y, f"Observação: {observacao}")
-        y -= 20
-
-        y -= 10
-
-    # Lista inicial com as duas imagens base (referência e teste)
-    imagens_para_inserir = [
+    # Mostrar imagens de referência e teste
+    imagens_base = [
         ("Imagem de Referência", img_ref_path),
         ("Imagem de Teste", img_teste_path)
     ]
 
-    # Apenas para métodos com resultado visual (absdiff e ssim), incluir imagem de diferenças
-    if metodo in ["absdiff", "ssim"]:
-        imagens_para_inserir.append(("Resultado com Diferenças", img_resultado_path))
-
-    # Adiciona as imagens ao relatório
-    for label, path in imagens_para_inserir:
+    for label, path in imagens_base:
         c.setFont("Helvetica-Bold", 12)
         c.drawCentredString(largura / 2, y, label)
         y -= 20
 
+        imagem_largura = 400
+        imagem_altura = 400
+
+        # Confirma se há espaço suficiente antes de desenhar a imagem
+        if y < imagem_altura + 50:
+            c.showPage()
+            y = altura - margem
+
+        # Centra horizontalmente
         try:
-            # Inserir a imagem
-            c.drawImage(path, margem, y - 200, width=200, height=200, preserveAspectRatio=True)
+            x_centrada = (largura - imagem_largura) / 2
+            c.drawImage(path, x_centrada, y - imagem_altura, width=imagem_largura, height=imagem_altura,
+                        preserveAspectRatio=True)
+
         except Exception as e:
-            # Caso a imagem falhe, escrever aviso
             c.setFont("Helvetica", 10)
             c.drawString(margem, y - 20, f"⚠️ Erro ao carregar imagem: {e}")
 
-        y -= 230
+        y -= imagem_altura + 10
+
+        if y < 200:
+            c.showPage()
+            y = altura - margem
+
+        # Separador visual
+    c.setFont("Helvetica-Bold", 14)
+    c.drawString(margem, y, "Resultados por Método de Análise")
+    y -= 30
+
+    for resultado in resultados:
+        metodo = resultado["metodo"]
+        tipo_analise = resultado["tipo_analise"]
+        metricas = resultado["metricas"]
+        img_resultado_path = resultado["imagem_resultado"]
+        duracao = resultado["duracao"]
+
+        c.setFont("Helvetica-Bold", 14)
+        c.drawString(margem, y, f"Método: {tipo_analise}")
+        y -= 25
+
+        c.setFont("Helvetica", 11)
+        num_diferencas = metricas.get("num_diferencas")
+        if num_diferencas is not None:
+            c.drawString(margem, y, f"Número de diferenças detetadas: {num_diferencas}")
+            y -= 20
+        else:
+            c.drawString(margem, y, "Número de diferenças detetadas: n/a")
+            y -= 20
+
+        if "pixels_diferentes" in metricas and "total_pixels" in metricas:
+            percentagem = metricas.get("percentagem_diferenca", 0.0)
+            c.drawString(margem, y,
+                         f"Pixels diferentes: {metricas['pixels_diferentes']} / {metricas['total_pixels']} ({percentagem:.2f}%)")
+            y -= 20
+        elif metodo in ["histograma", "ssim"]:
+            c.drawString(margem, y, "Pixels diferentes: n/a")
+            y -= 20
+
+        if metodo == "histograma" and "correlacao_histogramas" in metricas:
+            c.drawString(margem, y, f"Correlação dos Histogramas: {metricas['correlacao_histogramas']:.4f} (mais próximo de 1 indica maior semelhança)")
+            y -= 20
+        elif metodo == "ssim" and "indice_ssim" in metricas:
+            c.drawString(margem, y, f"Índice SSIM: {metricas['indice_ssim']:.4f} (mais próximo de 1 indica maior semelhança estrutural)")
+            y -= 20
+            y -= 10
+
+        # Gerar observação automática
+        observacao = gerar_observacoes(metodo, {**metricas, **metricas})
+        c.setFont("Helvetica-Oblique", 11)
+        c.drawString(margem, y, f"Observação: {observacao}")
+        y -= 30
+
+        # Apenas para métodos com resultado visual (absdiff e ssim), incluir imagem de diferenças
+        if metodo in ["absdiff", "ssim"] and img_resultado_path:
+            c.setFont("Helvetica", 10)
+            c.drawString(margem, y, f"Imagem de Resultado: {img_resultado_path}")
+            y -= 30
+
+            c.setFont("Helvetica-Bold", 12)
+            c.drawCentredString(largura / 2, y, "Resultado com Diferenças")
+            y -= 20
+
+            # Se não houver espaço suficiente na página, cria uma nova
+            if y < 320:
+                c.showPage()
+                y = altura - margem
+
+            try:
+                # Dimensões e centralização horizontal da imagem
+                imagem_largura = 400
+                imagem_altura = 400
+                x_centrada = (largura - imagem_largura) / 2
+                c.drawImage(img_resultado_path, x_centrada, y - imagem_altura,
+                            width=imagem_largura, height=imagem_altura, preserveAspectRatio=True)
+            except Exception as e:
+                c.setFont("Helvetica", 10)
+                c.drawString(margem, y - 20, f"⚠️ Erro ao carregar imagem: {e}")
+
+            # Ajuste de Y após a imagem
+            y -= imagem_altura + 30
+
+            # Confirma se ainda há espaço na página
+            if y < 200:
+                c.showPage()
+                y = altura - margem
+
+        y -= 10
 
         # Se acabar a página, cria uma nova
         if y < 200:

@@ -4,13 +4,13 @@ import time
 import uuid
 
 # Importação de funções do módulo de geração de relatórios
-from output.relatorio import guardar_imagem_resultado, gerar_relatorio_pdf
+from output.relatorio import guardar_imagem_resultado, gerar_relatorio_pdf_multimetodo
 
 # Importação de funções do módulo de análise de diferenças
 from processamento.analises import analisar_diferencas
 
-# Definir o método de análise: "absdiff", "histograma" ou "ssim"
-metodo_analise = "absdiff"
+# Lista de métodos de análise a aplicar
+metodos_analise = ["absdiff", "histograma", "ssim"]
 
 # Definir caminhos das imagens de referência e de teste
 IMG_NOME = "menu.png"
@@ -38,43 +38,53 @@ if img_ref.shape != img_teste.shape:
 # Gera identificador único
 id_relatorio = str(uuid.uuid4())[:8]
 
-# Inicia contagem do tempo
-inicio = time.time()
+# Inicia contagem do tempo total
+inicio_global = time.time()
 
-# Executa a análise selecionada
-img_resultado, tipo_analise, metricas = analisar_diferencas(img_ref, img_teste, metodo = metodo_analise)
+# Lista para guardar resultados de cada método
+resultados = []
 
-# Calcula tempo de execução
-duracao = time.time() - inicio
+# Executa cada método de análise
+for metodo in metodos_analise:
+    print(f"\n🔎 A executar método: {metodo}")
+    inicio = time.time()
+    img_resultado, tipo_analise, metricas = analisar_diferencas(img_ref, img_teste, metodo=metodo)
+    duracao = time.time() - inicio
 
-# Guarda a imagem de resultado
-caminho_resultado = None
-if metodo_analise in ["absdiff", "ssim"]:
-    caminho_resultado = guardar_imagem_resultado(img_resultado, metodo = metodo_analise, identificador = id_relatorio)
+    caminho_resultado = None
+    if metodo in ["absdiff", "ssim"]:
+        caminho_resultado = guardar_imagem_resultado(img_resultado, metodo=metodo, identificador=id_relatorio)
 
-# Cópia completa das métricas para uso em observações automáticas
-extra_metricas = metricas.copy()
+    resultados.append({
+        "metodo": metodo,
+        "tipo_analise": tipo_analise,
+        "metricas": metricas,
+        "imagem_resultado": caminho_resultado,
+        "duracao": duracao
+    })
+
+# Calcula tempo total de execução
+duracao_total = time.time() - inicio_global
 
 # Gera o relatório PDF; a imagem de resultado só é obrigatória para métodos com comparação visual (absdiff e ssim)
-if caminho_resultado or metodo_analise == "histograma":
-    gerar_relatorio_pdf(
-        img_ref_path = IMG_REFERENCIA,
-        img_teste_path = IMG_TESTE,
-        img_resultado_path = caminho_resultado,
-        num_diferencas = metricas.get("num_diferencas"),
-        total_pixels = metricas.get("total_pixels"),
-        pixels_diferentes = metricas.get("pixels_diferentes"),
-        percentagem_diferenca = metricas.get("percentagem_diferenca"),
-        tipo_analise = tipo_analise,
-        metodo = metodo_analise,
-        identificador = id_relatorio,
-        duracao = duracao,
-        extra_metricas = extra_metricas
-    )
-else:
-    print("⚠️ A imagem de resultado não foi guardada. O relatório PDF não será gerado.")
+gerar_relatorio_pdf_multimetodo(
+    img_ref_path = IMG_REFERENCIA,
+    img_teste_path = IMG_TESTE,
+    resultados = resultados,
+    identificador = id_relatorio,
+    duracao_total = duracao_total
+)
 
-# Mostra a imagem de resultado
-cv2.imshow("Diferenças Detetadas", img_resultado)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+# Mostra a imagem de resultado do último método, se existir
+if resultados:
+    ultima = resultados[-1]
+    img_mostrar = None
+    if ultima["imagem_resultado"]:
+        img_mostrar = cv2.imread(ultima["imagem_resultado"])
+    else:
+        img_mostrar = img_teste
+
+    if img_mostrar is not None:
+        cv2.imshow("Último Resultado de Diferenças Detetadas", img_mostrar)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
