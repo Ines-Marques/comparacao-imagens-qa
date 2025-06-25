@@ -72,7 +72,7 @@ def analisar_diferencas(img_ref, img_teste, metodo="absdiff"):
 
         # Desenha cada contorno preenchido na cor vermelha
         for contorno in contornos:
-            cv2.drawContours(overlay, [contorno], -1, cor, thickness=cv2.FILLED)
+            cv2.drawContours(overlay, [contorno], -1, cor, thickness = cv2.FILLED)
 
         # Combina overlay com imagem original e utilizando transparência
         # Fórmula: resultado = (overlay * alpha) + (original * (1-alpha))
@@ -135,7 +135,7 @@ def analisar_diferencas(img_ref, img_teste, metodo="absdiff"):
         # score: valor global de similaridade (0 a 1, onde 1 = idêntico)
         # diff: mapa pixel-a-pixel de similaridade estrutural
         # full=True: retorna tanto o score global quanto o mapa detalhado
-        score, diff = ssim(gray_ref, gray_teste, full=True)
+        score, diff = ssim(gray_ref, gray_teste, full = True)
         diff = (diff * 255).astype("uint8")
 
         # Define limiar de similaridade estrutural
@@ -158,7 +158,7 @@ def analisar_diferencas(img_ref, img_teste, metodo="absdiff"):
 
         # Desenha contornos preenchidos para destacar diferenças estruturais
         for contorno in contornos:
-            cv2.drawContours(overlay, [contorno], -1, cor, thickness=cv2.FILLED)
+            cv2.drawContours(overlay, [contorno], -1, cor, thickness = cv2.FILLED)
 
         # Aplica overlay com transparência
         cv2.addWeighted(overlay, 0.7, img_resultado, 1 - alpha, 0, img_resultado)

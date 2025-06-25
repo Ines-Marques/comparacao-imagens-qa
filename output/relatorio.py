@@ -96,7 +96,7 @@ def gerar_observacoes(metodo, metricas):
     # Método não reconhecido ou sem métricas
     return "-"
 
-def gerar_relatorio_pdf_multimetodo(img_ref_path, img_teste_path, resultados, identificador="", duracao_total=None):
+def gerar_relatorio_pdf_multimetodo(img_ref_path, img_teste_path, resultados, identificador = "", duracao_total = None):
     """
     Gera um relatório PDF completo com análise de múltiplos métodos.
 
@@ -117,7 +117,7 @@ def gerar_relatorio_pdf_multimetodo(img_ref_path, img_teste_path, resultados, id
 
     # Preparação do ficheiro de output
     pasta = "relatorios"
-    os.makedirs(pasta, exist_ok=True)
+    os.makedirs(pasta, exist_ok = True)
 
     # Criar nome único do ficheiro PDF com timestamp
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -178,8 +178,8 @@ def gerar_relatorio_pdf_multimetodo(img_ref_path, img_teste_path, resultados, id
         # Tenta inserir a imagem no PDF
         try:
             x_centrada = (largura - imagem_largura) / 2      # Centra horizontalmente a imagem no PDF
-            c.drawImage(path, x_centrada, y - imagem_altura, width=imagem_largura, height=imagem_altura,
-                        preserveAspectRatio=True)            # Mantém proporções originais
+            c.drawImage(path, x_centrada, y - imagem_altura, width = imagem_largura, height = imagem_altura,
+                        preserveAspectRatio = True)            # Mantém proporções originais
 
         # Em caso de erro (ficheiro não encontrado, formato inválido, etc.)
         except Exception as e:
@@ -280,7 +280,7 @@ def gerar_relatorio_pdf_multimetodo(img_ref_path, img_teste_path, resultados, id
                 imagem_altura = 400
                 x_centrada = (largura - imagem_largura) / 2
                 c.drawImage(img_resultado_path, x_centrada, y - imagem_altura,
-                            width=imagem_largura, height=imagem_altura, preserveAspectRatio=True)
+                            width = imagem_largura, height = imagem_altura, preserveAspectRatio = True)
             except Exception as e:
                 # Erro a carregar imagem de resultado
                 c.setFont("Helvetica", 10)

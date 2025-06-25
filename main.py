@@ -14,6 +14,7 @@ metodos_analise = ["absdiff", "histograma", "ssim"]
 
 # Definir caminhos das imagens de referência e de teste
 # IMG_NOME: Nome do ficheiro de imagem a analisar (deve existir em ambas as pastas)
+# menu, menu_igual, meme, resol_dif, em_falta
 IMG_NOME = "menu.png"
 
 # Constrói caminhos completos para as imagens usando os.path.join()
@@ -67,7 +68,7 @@ for metodo in metodos_analise:
     inicio = time.time()
 
     # Retorna a imagem com diferenças destacadas, descrição do tipo, métricas calculadas
-    img_resultado, tipo_analise, metricas = analisar_diferencas(img_ref, img_teste, metodo=metodo)
+    img_resultado, tipo_analise, metricas = analisar_diferencas(img_ref, img_teste, metodo = metodo)
 
     # Calcula tempo decorrido para este método
     duracao = time.time() - inicio
@@ -80,7 +81,7 @@ for metodo in metodos_analise:
     # "absdiff" e "ssim" criam imagens com diferenças destacadas visualmente
     # "histograma" é análise estatística sem componente visual
     if metodo in ["absdiff", "ssim"]:
-        caminho_resultado = guardar_imagem_resultado(img_resultado, metodo=metodo, identificador=id_relatorio)
+        caminho_resultado = guardar_imagem_resultado(img_resultado, metodo = metodo, identificador = id_relatorio)
 
     # Adiciona resultado deste método à lista de resultados
     resultados.append({
