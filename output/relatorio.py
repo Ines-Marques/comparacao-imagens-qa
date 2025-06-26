@@ -65,7 +65,7 @@ def gerar_observacoes(metodo, metricas):
         if correlacao > 0.98:       # Correlação muito alta
             return "OK As imagens apresentam elevada semelhança de histograma."
         elif correlacao > 0.90:     # Correlação moderada
-            return "ATENÇÂO As imagens têm algumas semelhanças no histograma."
+            return "ATENÇÃO As imagens têm algumas semelhanças no histograma."
         else:                       # Correlação baixa
             return "PERIGO As imagens têm histogramas significativamente diferentes."
 
@@ -251,7 +251,7 @@ def gerar_relatorio_pdf_multimetodo(img_ref_path, img_teste_path, resultados, id
             y -= 10
 
         # Gera observação qualitativa baseada nas métricas
-        observacao = gerar_observacoes(metodo, {**metricas, **metricas})
+        observacao = gerar_observacoes(metodo, metricas)
         c.setFont("Helvetica-Oblique", 11)      # Itálico para destacar observações
         c.drawString(margem, y, f"Observação: {observacao}")
         y -= 30

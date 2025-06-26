@@ -7,7 +7,7 @@ def analisar_diferencas(img_ref, img_teste, metodo="absdiff"):
     """
     Compara duas imagens utilizando o método escolhido e retorna análise detalhada.
 
-    Esta função é o núcleo do sistema de comparação, com três métodos Disponíveis:
+    Esta função é o núcleo do sistema de comparação, com três métodos disponíveis:
     - "absdiff": Diferença absoluta pixel-a-pixel, ideal para detetar alterações pontuais
     - "histograma": Compara distribuição de intensidades, útil para mudanças globais de cor/brilho
     - "ssim": Índice de Similaridade Estrutural, com foco em mudanças na estrutura da imagem
