@@ -3,25 +3,29 @@ import cv2  # OpenCV para manipulação de imagens
 # Para análise SSIM
 from skimage.metrics import structural_similarity as ssim
 
-def analisar_diferencas(img_ref, img_teste, metodo="absdiff"):
+def analisar_diferencas(img_ref, img_teste, metodo = "absdiff"):
     """
-    Compara duas imagens utilizando o método escolhido e retorna análise detalhada.
+    Compara duas imagens utilizando um dos métodos disponíveis para deteção de diferenças visuais.
 
-    Esta função é o núcleo do sistema de comparação, com três métodos disponíveis:
+    Esta função é o núcleo do sistema de comparação e aplica um único algoritmo de comparação
+    por chamada. Os métodos disponíveis são:
     - "absdiff": Diferença absoluta pixel-a-pixel, ideal para detetar alterações pontuais
-    - "histograma": Compara distribuição de intensidades, útil para mudanças globais de cor/brilho
+    - "histograma": Compara a distribuição de intensidades, útil para mudanças globais de cor/brilho
     - "ssim": Índice de Similaridade Estrutural, com foco em mudanças na estrutura da imagem
 
-    Parâmetros:
-        img_ref: Imagem de referência
-        img_teste: Imagem de teste a comparar
-        metodo: Método de análise a aplicar (string)
+    Argumentos:
+        img_ref (numpy.ndarray): Imagem de referência
+        img_teste (numpy.ndarray): Imagem de teste a comparar
+        metodo (str): Método de análise a aplicar ('absdiff', 'histograma' ou 'ssim'). O default é 'absdiff'.
 
     Retorna:
         tuple: (imagem_resultado, tipo_analise, metricas)
-            - imagem_resultado: Imagem com diferenças destacadas visualmente
-            - tipo_analise: Descrição em texto do método usado
-            - metricas: Dicionário com valores quantitativos da análise
+            - imagem_resultado (numpy.ndarray ou None): Imagem com diferenças destacadas visualmente (quando aplicável)
+            - tipo_analise (str): Descrição em texto do método usado
+            - metricas (dict): Dicionário com métricas específicas do método escolhido.
+
+    Erros:
+        ValueError: Se o nome do método especificado não for reconhecido.
     """
 
     # Parâmetros para destacar diferenças visualmente em todos os métodos

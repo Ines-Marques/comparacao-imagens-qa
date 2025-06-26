@@ -1,3 +1,19 @@
+"""
+Sistema de Comparação de Imagens para Quality Assurance (QA)
+
+Este módulo coordena a execução dos métodos de comparação de imagens para identificar
+alterações visuais entre capturas de ecrã de interfaces gráficas.
+
+Métodos disponíveis:
+- Diferença Absoluta (AbsDiff): Análise pixel-a-pixel para alterações visuais diretas.
+- Comparação de Histogramas: Avaliação estatística da distribuição de intensidades.
+- SSIM (Structural Similarity Index): Análise de alterações estruturais perceptíveis.
+
+Autor: Inês Marques
+Data: Junho 2025
+Unidade Curricular: Projeto de Engenharia Informática
+"""
+
 import cv2  # OpenCV para manipulação de imagens
 import os   # Operações com sistema de ficheiros
 import time # Medição de tempo de execução

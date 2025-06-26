@@ -4,19 +4,23 @@ from datetime import datetime # Para geração de timestamps únicos nos nomes d
 from reportlab.lib.pagesizes import A4 # Define o tamanho padrão da página PDF
 from reportlab.pdfgen import canvas # Biblioteca principal para geração de PDFs
 
-def guardar_imagem_resultado(imagem, prefixo="resultado", metodo = None, identificador = ""):
+def guardar_imagem_resultado(imagem, prefixo = "resultado", metodo = None, identificador = ""):
     """
     Guarda uma imagem processada no diretório 'relatorios/' com nome único baseado no timestamp.
 
-    Parâmetros:
-        imagem: Array numpy da imagem OpenCV a guardar
-        prefixo: Prefixo do nome do ficheiro ("resultado")
-        metodo: Nome do método usado na análise (para incluir no nome)
-        identificador: ID único da sessão de análise
+    Argumentos:
+        imagem (numpy.ndarray): Array numpy da imagem OpenCV a guardar
+        prefixo (str, opcional): Prefixo do nome do ficheiro. O default é "resultado"
+        metodo (str, opcional): Nome do método usado na análise (para incluir no nome). O default é None.
+        identificador (str, opcional): ID único da sessão de análise. O default é "".
 
     Retorna:
         str: Caminho completo do ficheiro guardado
         None: Em caso de erro ao guardar
+
+    Nota:
+        O nome final segue o padrão:
+        {prefixo}_{metodo}_{timestamp}_{identificador}.png
     """
 
     # Define e cria o diretório de output se não existir
@@ -47,15 +51,19 @@ def guardar_imagem_resultado(imagem, prefixo="resultado", metodo = None, identif
 def gerar_observacoes(metodo, metricas):
     """
         Gera observações textuais automáticas baseadas nos resultados da análise.
-        Interpreta as métricas numéricas e converte em avaliações qualitativas.
+        Interpreta as métricas numéricas e converte em avaliações qualitativas (OK / ATENÇÃO / PERIGO)
+        com base nos limiares definidos para cada método de análise.
 
-        Parâmetros:
-            metodo: Nome do método usado ("histograma", "ssim", "absdiff")
-            metricas: Dicionário com valores calculados pelo método
+        Argumentos:
+            metodo (str): Nome do método usado ("histograma", "ssim", "absdiff")
+            metricas (dict): Dicionário com valores calculados pelo método
 
         Retorna:
-            str: Observação textual classificada (OK/ATENÇÃO/PERIGO)
-        """
+            str: Texto descritivo da observação, incluindo classificação de risco.
+
+        Nota:
+        Os thresholds foram definidos com base em testes.
+    """
 
     # Análise baseada em correlação de histogramas (distribuição de cores)
     if metodo == "histograma":
@@ -77,7 +85,7 @@ def gerar_observacoes(metodo, metricas):
         if ssim_score > 0.98:       # SSIM muito alto (estrutura quase idêntica)
             return "OK As imagens são estruturalmente quase idênticas."
         elif ssim_score > 0.90:     # SSIM moderado (alguma semelhança estrutural)
-            return "ATENÇÂO As imagens apresentam alguma semelhança estrutural."
+            return "ATENÇÃO As imagens apresentam alguma semelhança estrutural."
         else:                       # SSIM baixo (diferenças estruturais significativas)
             return "PERIGO Diferenças estruturais visíveis entre as imagens."
 
@@ -98,7 +106,7 @@ def gerar_observacoes(metodo, metricas):
 
 def gerar_relatorio_pdf_multimetodo(img_ref_path, img_teste_path, resultados, identificador = "", duracao_total = None):
     """
-    Gera um relatório PDF completo com análise de múltiplos métodos.
+    Gera um relatório PDF detalhado com os resultados de múltiplos métodos de comparação.
 
     O relatório incluí:
     - Informações gerais (data, tempo, ID, caminhos das imagens)
@@ -107,12 +115,15 @@ def gerar_relatorio_pdf_multimetodo(img_ref_path, img_teste_path, resultados, id
     - Imagens de diferenças (quando aplicável)
     - Observações automáticas para cada método
 
-    Parâmetros:
-        img_ref_path: Caminho para a imagem de referência
-        img_teste_path: Caminho para a imagem de teste
-        resultados: Lista de dicionários com resultados de cada método
-        identificador: ID único desta sessão de análise
-        duracao_total: Tempo total de execução
+    Argumentos:
+        img_ref_path (str): Caminho para a imagem de referência
+        img_teste_path (str): Caminho para a imagem de teste
+        resultados (list): Lista de dicionários com resultados de cada método
+        identificador (str, opcional): ID único desta sessão de análise. O default é "".
+        duracao_total (float, optional): Tempo total de execução da análise (em segundos).
+
+    Nota:
+        O ficheiro é guardado automaticamente na pasta 'relatorios/' com timestamp e ID.
     """
 
     # Preparação do ficheiro de output

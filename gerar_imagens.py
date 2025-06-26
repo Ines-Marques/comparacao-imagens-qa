@@ -1,3 +1,22 @@
+"""
+Módulo auxiliar para gerar imagens de teste artificiais.
+
+Este script cria duas imagens com diferenças visuais simples:
+- Uma imagem de referência com fundo branco e um quadrado azul.
+- Uma imagem de teste com o mesmo conteúdo, mas com um círculo verde adicional.
+
+As imagens são guardadas nas pastas:
+- imagens/referencia/exemplo.png
+- imagens/teste/exemplo.png
+
+Utilização:
+    Executar diretamente este ficheiro para gerar as imagens:
+
+Nota:
+    Este módulo é útil para testar a funcionalidade da ferramenta de comparação
+    sem depender de imagens reais ou externas.
+"""
+
 import cv2
 import numpy as np
 import os
